@@ -1,0 +1,44 @@
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './api-authorization/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
+
+function AuthLinks() {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    await logout();
+    navigate('/login');
+  };
+
+  if (isAuthenticated) {
+    return <li><a href="#" onClick={handleLogout}>Log out</a></li>;
+  }
+  return (
+    <>
+      <li><Link to="/login">Log in</Link></li>
+      <li><Link to="/register">Register</Link></li>
+    </>
+  );
+}
+
+export function NavMenu() {
+  return (
+    <header>
+      <nav>
+        <ul>
+          <li><Link to="/">Budge</Link></li>
+        </ul>
+        <ul>
+          <li><Link to="/">Ledger</Link></li>
+        </ul>
+        <ul>
+          <AuthLinks />
+          <li aria-hidden="true" className="nav-separator"></li>
+          <li><ThemeToggle /></li>
+        </ul>
+      </nav>
+    </header>
+  );
+}

@@ -1,0 +1,271 @@
+.ledger {
+  --ink: #241c16;
+  --paper: #f3ecdf;
+  --card: #fffaf3;
+  --line: #e4d8c6;
+  --good: #1d6b45;
+  --bad: #9f1239;
+  --copper: #8c3a1e;
+  color: var(--ink);
+  display: grid;
+  gap: 1.25rem;
+}
+
+body:has(.ledger) {
+  background:
+    radial-gradient(1200px 420px at 10% -10%, rgba(140, 58, 30, 0.08), transparent 55%),
+    var(--paper, #f3ecdf);
+}
+
+.ledger h1,
+.ledger h2,
+.ledger .stat dd {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+.ledger h1 {
+  margin-bottom: 0.35rem;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 0.95;
+}
+
+.ledger h2 {
+  margin-bottom: 0.2rem;
+  font-size: 1.55rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--copper);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ledger-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.month-switch {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(7rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  min-width: min(100%, 36rem);
+}
+
+.stat {
+  margin: 0;
+  padding: 0.85rem 0.95rem 0.7rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.stat dt {
+  color: #6d6256;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stat dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.55rem;
+}
+
+.stat.good dd { color: var(--good); }
+.stat.bad dd,
+.bad { color: var(--bad); }
+.good { color: var(--good); }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.15rem 1.2rem 1.25rem;
+}
+
+.panel-heading p,
+.meta,
+.empty,
+.preview,
+.quick-add-hint {
+  color: #6d6256;
+  margin: 0;
+}
+
+.panel-heading {
+  margin-bottom: 0.9rem;
+}
+
+.ledger-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1.25rem;
+}
+
+.bills-panel,
+.ledger-grid .panel:nth-child(3),
+.ledger-grid .panel:nth-child(4) {
+  grid-column: span 1;
+}
+
+.stack,
+.stack li {
+  list-style: none;
+}
+
+.stack {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+}
+
+.row,
+.row-actions,
+.inline-form,
+.month-switch {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.row {
+  justify-content: space-between;
+}
+
+.row > div,
+.credit-card {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.row small,
+.meta {
+  font-size: 0.85rem;
+}
+
+.meter {
+  height: 0.45rem;
+  margin: 0.45rem 0;
+  background: #efe4d4;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  background: var(--good);
+}
+
+.meter.over > span {
+  background: var(--bad);
+}
+
+.quick-add,
+.add-form .inline-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.quick-add {
+  grid-template-columns: 7.5rem 1fr 1fr 10rem 1fr auto;
+}
+
+.add-form {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+}
+
+.form-title,
+.add-form > label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 650;
+}
+
+.category .inline-form {
+  display: grid;
+  grid-template-columns: auto 8rem auto auto;
+  align-items: center;
+}
+
+.category .inline-form label {
+  margin: 0;
+}
+
+.bill-group + .bill-group {
+  margin-top: 0.8rem;
+}
+
+.payoff {
+  margin: 0.45rem 0 0.2rem;
+}
+
+.credit-card {
+  padding-bottom: 0.2rem;
+}
+
+.preview {
+  margin-top: 0.7rem;
+}
+
+.banner {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: #fff1f2;
+  color: var(--bad);
+}
+
+.quiet {
+  --pico-background-color: transparent;
+  --pico-border-color: transparent;
+  --pico-color: #6d6256;
+  padding-inline: 0.4rem;
+}
+
+.ledger button.secondary {
+  --pico-background-color: transparent;
+  --pico-border-color: var(--line);
+  --pico-color: var(--ink);
+}
+
+@media (max-width: 980px) {
+  .ledger-head,
+  .stats,
+  .ledger-grid,
+  .quick-add,
+  .add-form .inline-form,
+  .category .inline-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    min-width: 0;
+  }
+
+  .row {
+    align-items: start;
+  }
+}
