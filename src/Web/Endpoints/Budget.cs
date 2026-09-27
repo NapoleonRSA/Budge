@@ -1,3 +1,4 @@
+using Budge.Application.Budget.Commands.UpdateCurrency;
 using Budge.Application.Budget.Queries.GetBudgetDashboard;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -10,6 +11,7 @@ public class Budget : IEndpointGroup
         groupBuilder.RequireAuthorization();
 
         groupBuilder.MapGet(GetBudgetDashboard);
+        groupBuilder.MapPut(UpdateCurrency, "currency");
     }
 
     [EndpointSummary("Get the household ledger")]
@@ -20,5 +22,14 @@ public class Budget : IEndpointGroup
         var dashboard = await sender.Send(new GetBudgetDashboardQuery(year ?? today.Year, month ?? today.Month));
 
         return TypedResults.Ok(dashboard);
+    }
+
+    [EndpointSummary("Change the ledger currency")]
+    [EndpointDescription("Sets the ISO currency used to show amounts. Existing numbers are not converted.")]
+    public static async Task<NoContent> UpdateCurrency(ISender sender, UpdateCurrencyCommand command)
+    {
+        await sender.Send(command);
+
+        return TypedResults.NoContent();
     }
 }

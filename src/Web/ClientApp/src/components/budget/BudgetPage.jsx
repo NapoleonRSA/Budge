@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { calculatePayoff, payoffSummary } from '../../lib/payoff';
 import {
   defaultSpentOn,
   formatLongDate,
   formatMoney,
   formatMonth,
+  setActiveCurrency,
+  currencyChoices,
   shiftMonth,
   spentShare,
 } from '../../lib/money';
@@ -23,7 +24,11 @@ import {
   getDashboard,
   readProblem,
   updateCategory,
+  updateCreditFacility,
+  updateCurrency,
 } from './api';
+import { DebtPanel } from './DebtPanel';
+import { CreditFacilityForm } from './CreditFacilityForm';
 import { QuickAdd } from './QuickAdd';
 import './budget.scss';
 
@@ -35,11 +40,13 @@ export function BudgetPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const [editingCreditId, setEditingCreditId] = useState(null);
 
   const load = async (nextYear = year, nextMonth = month) => {
     setLoading(true);
     try {
       const data = await getDashboard(nextYear, nextMonth);
+      setActiveCurrency(data.currency);
       setDashboard(data);
       setError('');
     } catch (problem) {
@@ -99,12 +106,25 @@ export function BudgetPage() {
   return (
     <div className="ledger">
       <header className="ledger-head">
-        <div>
-          <p className="eyebrow">Household ledger</p>
-          <h1>{formatMonth(year, month)}</h1>
-          <div className="month-switch">
-            <button type="button" onClick={() => moveMonth(-1)}>Previous month</button>
-            <button type="button" className="secondary" onClick={() => moveMonth(1)}>Next month</button>
+          <div>
+            <h1>{formatMonth(year, month)}</h1>
+          <div className="ledger-tools">
+            <div className="month-switch">
+              <button type="button" onClick={() => moveMonth(-1)}>Previous month</button>
+              <button type="button" className="secondary" onClick={() => moveMonth(1)}>Next month</button>
+            </div>
+            <div className="currency-switch">
+              <label htmlFor="ledger-currency">Currency</label>
+              <select
+                id="ledger-currency"
+                value={dashboard?.currency ?? 'USD'}
+                disabled={pending || !dashboard}
+                onChange={(event) => run(() => updateCurrency(event.target.value))}
+              >
+                {currencyChoices().map((code) => <option key={code} value={code}>{code}</option>)}
+              </select>
+              <p>Amounts stay as entered. This changes how they are shown.</p>
+            </div>
           </div>
         </div>
         <dl className="stats">
@@ -227,53 +247,46 @@ export function BudgetPage() {
           })}
           <AddBill people={people} pending={pending} onSubmit={(body) => run(() => createBill(body))} />
         </section>
-
-        <section className="panel" aria-labelledby="credit-title">
-          <div className="panel-heading">
-            <h2 id="credit-title">Credit</h2>
-            <p>A set payment is added to that person’s bills. Payoff assumes the same payment every month, after interest.</p>
-          </div>
-          <ul className="stack">
-            {(dashboard?.creditFacilities ?? []).map((facility) => (
-              <li key={facility.id} className="credit-card">
-                <div className="row">
-                  <div>
-                    <strong>{facility.name}</strong>
-                    <span>Paid by {facility.personName} · due day {facility.dueDay}</span>
-                  </div>
-                  <strong>{formatMoney(facility.balance)}</strong>
-                </div>
-                <p className={facility.willPayOff ? 'payoff good' : 'payoff bad'}>
-                  {payoffSummary({
-                    willPayOff: facility.willPayOff,
-                    months: facility.monthsToPayoff,
-                    payoffDate: facility.payoffDate,
-                    totalInterest: facility.totalInterest,
-                    firstMonthInterest: facility.firstMonthInterest,
-                  })}
-                </p>
-                <p className="meta">
-                  {facility.annualInterestRate}% APR · payment {formatMoney(facility.monthlyPayment)} · interest this month {formatMoney(facility.firstMonthInterest)}
-                </p>
-                <div className="row-actions">
-                  <button
-                    type="button"
-                    disabled={pending || facility.balance <= 0}
-                    onClick={() => run(() => applyCreditPayment(facility.id))}
-                  >
-                    Apply set payment
-                  </button>
-                  <button type="button" className="quiet" disabled={pending} onClick={() => run(() => deleteCreditFacility(facility.id))}>
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-            {(dashboard?.creditFacilities ?? []).length === 0 && <li className="empty">No credit cards or facilities yet.</li>}
-          </ul>
-          <AddCredit people={people} pending={pending} onSubmit={(body) => run(() => createCreditFacility(body))} />
-        </section>
       </div>
+
+      <section className="panel debts" aria-labelledby="credit-title">
+        <div className="panel-heading">
+          <h2 id="credit-title">Loans and credit</h2>
+          <p>Home loans show the full amortisation. Cards and revolving facilities show when the set payment clears the balance, or that it never does.</p>
+        </div>
+        <div className="debt-list">
+          {(dashboard?.creditFacilities ?? []).map((facility) => (
+            editingCreditId === facility.id
+              ? (
+                <CreditFacilityForm
+                  key={`edit-${facility.id}`}
+                  people={people}
+                  pending={pending}
+                  facility={facility}
+                  onCancel={() => setEditingCreditId(null)}
+                  onSubmit={(body) => run(() => updateCreditFacility(facility.id, body)).then((saved) => {
+                    if (saved) setEditingCreditId(null);
+                    return saved;
+                  })}
+                />
+              )
+              : (
+                <DebtPanel
+                  key={facility.id}
+                  facility={facility}
+                  pending={pending}
+                  onApply={() => run(() => applyCreditPayment(facility.id))}
+                  onDelete={() => run(() => deleteCreditFacility(facility.id))}
+                  onEdit={() => setEditingCreditId(facility.id)}
+                />
+              )
+          ))}
+          {(dashboard?.creditFacilities ?? []).length === 0 && <p className="empty">No loans or credit facilities yet.</p>}
+        </div>
+        {!editingCreditId && (
+          <CreditFacilityForm people={people} pending={pending} onSubmit={(body) => run(() => createCreditFacility(body))} />
+        )}
+      </section>
 
       <section className="panel" aria-labelledby="activity-title">
         <div className="panel-heading">
@@ -431,69 +444,6 @@ function AddBill({ people, pending, onSubmit }) {
         </select>
         <button type="submit" disabled={pending || people.length === 0}>Add bill</button>
       </div>
-    </form>
-  );
-}
-
-function AddCredit({ people, pending, onSubmit }) {
-  const [form, setForm] = useState({
-    name: '',
-    personId: '',
-    balance: '',
-    annualInterestRate: '',
-    monthlyPayment: '',
-    dueDay: '1',
-  });
-  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
-  const payment = Number(form.monthlyPayment);
-  const preview = payment > 0
-    ? calculatePayoff({
-      balance: Number(form.balance || 0),
-      annualInterestPercent: Number(form.annualInterestRate || 0),
-      monthlyPayment: payment,
-      asOf: new Date().toISOString().slice(0, 10),
-    })
-    : null;
-
-  return (
-    <form
-      className="add-form"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        const saved = await onSubmit({
-          name: form.name.trim(),
-          personId: Number(form.personId),
-          balance: Number(form.balance),
-          annualInterestRate: Number(form.annualInterestRate),
-          monthlyPayment: payment,
-          dueDay: Number(form.dueDay),
-        });
-        if (saved) {
-          setForm({
-            name: '',
-            personId: form.personId,
-            balance: '',
-            annualInterestRate: '',
-            monthlyPayment: '',
-            dueDay: '1',
-          });
-        }
-      }}
-    >
-      <p className="form-title">Add a credit card or facility</p>
-      <div className="inline-form">
-        <input aria-label="Facility name" placeholder="Name" value={form.name} onChange={update('name')} required maxLength={120} />
-        <select aria-label="Person who pays the facility" value={form.personId} onChange={update('personId')} required>
-          <option value="">Person</option>
-          {people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
-        </select>
-        <input aria-label="Balance" type="number" min="0" step="0.01" placeholder="Balance" value={form.balance} onChange={update('balance')} required />
-        <input aria-label="Annual interest rate" type="number" min="0" max="100" step="0.01" placeholder="APR %" value={form.annualInterestRate} onChange={update('annualInterestRate')} required />
-        <input aria-label="Set monthly payment" type="number" min="0.01" step="0.01" placeholder="Payment" value={form.monthlyPayment} onChange={update('monthlyPayment')} required />
-        <input aria-label="Payment due day" type="number" min="1" max="31" value={form.dueDay} onChange={update('dueDay')} required />
-        <button type="submit" disabled={pending || people.length === 0}>Add facility</button>
-      </div>
-      {preview && <p className="preview">{payoffSummary(preview)}</p>}
     </form>
   );
 }

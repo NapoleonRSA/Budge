@@ -25,6 +25,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<CreditFacility> CreditFacilities => Set<CreditFacility>();
 
+    public DbSet<LedgerSettings> LedgerSettings => Set<LedgerSettings>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

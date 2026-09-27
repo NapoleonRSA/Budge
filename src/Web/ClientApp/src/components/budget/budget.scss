@@ -58,6 +58,38 @@ body:has(.ledger) {
   margin-top: 0.8rem;
 }
 
+.ledger-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  align-items: end;
+}
+
+.currency-switch {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+}
+
+.currency-switch label {
+  margin: 0;
+  color: #6d6256;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.currency-switch select {
+  margin: 0;
+  min-width: 6.5rem;
+}
+
+.currency-switch p {
+  margin: 0;
+  max-width: 16rem;
+  color: #6d6256;
+  font-size: 0.78rem;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(7rem, 1fr));
@@ -203,6 +235,37 @@ body:has(.ledger) {
   font-weight: 650;
 }
 
+.debt-form {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.debt-form label,
+.simulator-inputs label {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  color: #6d6256;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.debt-form input,
+.debt-form select,
+.simulator-inputs input {
+  margin: 0;
+}
+
+.debt-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.debt-form-actions button {
+  margin: 0;
+}
+
 .category .inline-form {
   display: grid;
   grid-template-columns: auto 8rem auto auto;
@@ -250,6 +313,256 @@ body:has(.ledger) {
   --pico-color: var(--ink);
 }
 
+.debts {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.debt-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.debt {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.15rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.payoff-simulator {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.8fr) minmax(18rem, 1.15fr) minmax(21rem, 1.8fr);
+  gap: 0.85rem;
+  align-items: end;
+  padding: 1rem;
+  background: #f7f1e6;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.simulator-copy h4 {
+  margin: 0 0 0.2rem;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.simulator-copy p {
+  margin: 0;
+  color: #6d6256;
+  font-size: 0.88rem;
+}
+
+.simulator-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.money-input {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 0.7rem;
+  color: var(--good);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.money-input input {
+  border: 0;
+  box-shadow: none;
+}
+
+.comparison-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.comparison-stat {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.comparison-stat span {
+  color: #6d6256;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.comparison-stat strong {
+  font-size: 0.93rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.comparison-stat.good strong { color: var(--good); }
+.comparison-stat.bad strong { color: var(--bad); }
+
+.debt-assumptions {
+  padding-top: 0.1rem;
+}
+
+.debt-actions {
+  flex-wrap: wrap;
+}
+
+.debt h3 {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+.debt-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  align-items: end;
+}
+
+.debt-head p,
+.debt .meta {
+  margin: 0.25rem 0 0;
+  color: #6d6256;
+}
+
+.debt-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.debt-balance span {
+  color: #6d6256;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.debt-balance strong {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.payoff-flag {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  font-weight: 650;
+}
+
+.flag-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.payoff-flag.good {
+  color: var(--good);
+}
+
+.payoff-flag.bad {
+  color: var(--bad);
+}
+
+.debt-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.chart {
+  margin: 0;
+  padding: 0.75rem 0.8rem 0.45rem;
+  background: #f7f1e6;
+  border-radius: 14px;
+}
+
+.chart figcaption {
+  margin: 0 0 0.15rem;
+  font-weight: 650;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-key {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  margin: 0.1rem 0 0.35rem;
+  color: #6d6256;
+  font-size: 0.85rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.35rem;
+  border-radius: 2px;
+  vertical-align: -0.05rem;
+}
+
+.swatch.principal {
+  background: var(--good);
+}
+
+.swatch.interest {
+  background: var(--copper);
+}
+
+.swatch.fees {
+  background: #d49a42;
+}
+
+.schedule-wrap {
+  overflow-x: auto;
+}
+
+.schedule {
+  width: 100%;
+  margin-bottom: 0.6rem;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule caption {
+  margin-bottom: 0.35rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+.cleared-row td {
+  color: var(--good);
+  font-weight: 650;
+}
+
+.lock-payment {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0.7rem 0 0;
+}
+
 @media (max-width: 980px) {
   .ledger-head,
   .stats,
@@ -267,5 +580,49 @@ body:has(.ledger) {
 
   .row {
     align-items: start;
+  }
+
+  .debt-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .debt-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .payoff-simulator {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-balance {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .schedule {
+    font-size: 0.82rem;
+  }
+
+  .schedule th:nth-child(1),
+  .schedule td:nth-child(1),
+  .schedule th:nth-child(4),
+  .schedule td:nth-child(4),
+  .schedule th:nth-child(5),
+  .schedule td:nth-child(5),
+  .schedule th:nth-child(6),
+  .schedule td:nth-child(6) {
+    display: none;
+  }
+
+  .comparison-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedule td,
+  .schedule th {
+    padding: 0.4rem 0.35rem;
+    white-space: nowrap;
   }
 }

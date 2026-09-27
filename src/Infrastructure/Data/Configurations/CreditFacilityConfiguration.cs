@@ -12,6 +12,12 @@ public class CreditFacilityConfiguration : IEntityTypeConfiguration<CreditFacili
             .HasMaxLength(120)
             .IsRequired();
 
+        builder.Property(f => f.Kind)
+            .HasConversion<int>();
+
+        builder.Property(f => f.Type)
+            .HasConversion<int>();
+
         builder.Property(f => f.Balance)
             .HasPrecision(18, 2);
 
@@ -19,6 +25,9 @@ public class CreditFacilityConfiguration : IEntityTypeConfiguration<CreditFacili
             .HasPrecision(9, 4);
 
         builder.Property(f => f.MonthlyPayment)
+            .HasPrecision(18, 2);
+
+        builder.Property(f => f.MonthlyAdminFee)
             .HasPrecision(18, 2);
 
         builder.HasOne(f => f.Person)

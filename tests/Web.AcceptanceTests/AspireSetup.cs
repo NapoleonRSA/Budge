@@ -1,10 +1,12 @@
 using Aspire.Hosting;
+using System.Security.Cryptography;
 
 namespace Budge.Web.AcceptanceTests;
 
 [SetUpFixture]
 public class AspireSetup
 {
+    public static string DevelopmentAdminPassword { get; private set; } = null!;
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
 
     public static IDistributedApplicationTestingBuilder Builder { get; private set; } = null!;
@@ -13,6 +15,8 @@ public class AspireSetup
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
+        DevelopmentAdminPassword = $"{Convert.ToHexString(RandomNumberGenerator.GetBytes(32))}aA1!";
+        Environment.SetEnvironmentVariable("Development__AdminPassword", DevelopmentAdminPassword);
         var cts = new CancellationTokenSource(DefaultTimeout);
         var cancellationToken = cts.Token;
 

@@ -26,7 +26,7 @@ public sealed class LoginStepDefinitions(LoginPage loginPage)
     public async Task TheUserLogsInWithValidCredentials()
     {
         await loginPage.SetEmail("administrator@localhost");
-        await loginPage.SetPassword("Administrator1!");
+        await loginPage.SetPassword(AspireSetup.DevelopmentAdminPassword);
         await loginPage.ClickLogin();
     }
 

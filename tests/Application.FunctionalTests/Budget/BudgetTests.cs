@@ -1,3 +1,4 @@
+using Budge.Application.Budget.Commands.UpdateCurrency;
 using Budge.Application.Budget.Queries.GetBudgetDashboard;
 using Budge.Application.Common.Exceptions;
 using Budge.Application.CreditFacilities.Commands.ApplyCreditPayment;
@@ -8,6 +9,8 @@ using Budge.Application.People.Commands.CreatePerson;
 using Budge.Application.Categories.Commands.CreateCategory;
 using Budge.Application.Bills.Commands.CreateBill;
 using Budge.Domain.Entities;
+using Budge.Domain.Enums;
+using Budge.Domain.Services;
 
 namespace Budge.Application.FunctionalTests.Budget;
 
@@ -156,5 +159,93 @@ public class BudgetTests : TestBase
         facility.MonthsToPayoff.ShouldBeNull();
         facility.FirstMonthInterest.ShouldBe(10m);
         dashboard.Bills.Single().Amount.ShouldBe(10m);
+        facility.Schedule.Count.ShouldBe(24);
+        facility.Schedule.Last().Balance.ShouldBe(1000m);
+    }
+
+    [Test]
+    public async Task ShouldAmortizeAHomeLoanDownToZero()
+    {
+        await TestApp.RunAsDefaultUserAsync();
+
+        var personId = await TestApp.SendAsync(new CreatePersonCommand { Name = "Alex" });
+        var payment = CreditPayoffCalculator.PaymentForTerm(12000m, 0m, 12);
+
+        await TestApp.SendAsync(new CreateCreditFacilityCommand
+        {
+            PersonId = personId,
+            Name = "Home loan",
+            Kind = FacilityKind.Installment,
+            TermMonths = 12,
+            Balance = 12000m,
+            AnnualInterestRate = 0m,
+            MonthlyPayment = payment,
+            DueDay = 1
+        });
+
+        var dashboard = await TestApp.SendAsync(new GetBudgetDashboardQuery(2026, 9));
+        var loan = dashboard.CreditFacilities.Single();
+
+        loan.Kind.ShouldBe(FacilityKind.Installment);
+        loan.Type.ShouldBe(FacilityType.OtherInstallment);
+        loan.TermMonths.ShouldBe(12);
+        loan.WillPayOff.ShouldBeTrue();
+        loan.MonthsToPayoff.ShouldBe(12);
+        loan.Schedule.Count.ShouldBe(12);
+        loan.Schedule.Last().Balance.ShouldBe(0);
+        dashboard.Bills.Single().Name.ShouldBe("Home loan payment");
+        dashboard.Bills.Single().Amount.ShouldBe(payment);
+    }
+
+    [Test]
+    public async Task ShouldStoreLoanTypeAndIncludeAdminFeesInPayoffProjectionAndPayments()
+    {
+        await TestApp.RunAsDefaultUserAsync();
+
+        var personId = await TestApp.SendAsync(new CreatePersonCommand { Name = "Alex" });
+        var facilityId = await TestApp.SendAsync(new CreateCreditFacilityCommand
+        {
+            PersonId = personId,
+            Name = "Car finance",
+            Type = FacilityType.CarLoan,
+            TermMonths = 10,
+            Balance = 100m,
+            AnnualInterestRate = 0m,
+            MonthlyPayment = 20m,
+            MonthlyAdminFee = 5m,
+            DueDay = 1
+        });
+
+        var beforePayment = await TestApp.SendAsync(new GetBudgetDashboardQuery(2026, 9));
+        var loan = beforePayment.CreditFacilities.Single();
+
+        loan.Type.ShouldBe(FacilityType.CarLoan);
+        loan.Kind.ShouldBe(FacilityKind.Installment);
+        loan.TotalFees.ShouldBe(35m);
+        loan.Schedule.First().Fee.ShouldBe(5m);
+        loan.Schedule.First().Balance.ShouldBe(85m);
+
+        await TestApp.SendAsync(new ApplyCreditPaymentCommand(facilityId));
+
+        var afterPayment = await TestApp.SendAsync(new GetBudgetDashboardQuery(2026, 9));
+        afterPayment.CreditFacilities.Single().Balance.ShouldBe(85m);
+    }
+
+    [Test]
+    public async Task ShouldChangeTheCurrencyWithoutAlteringAmounts()
+    {
+        await TestApp.RunAsDefaultUserAsync();
+
+        var before = await TestApp.SendAsync(new GetBudgetDashboardQuery(2026, 9));
+        before.Currency.ShouldBe("USD");
+        before.People.ShouldBeEmpty();
+        before.Bills.ShouldBeEmpty();
+        before.CreditFacilities.ShouldBeEmpty();
+
+        await TestApp.SendAsync(new UpdateCurrencyCommand { CurrencyCode = "EUR" });
+
+        var after = await TestApp.SendAsync(new GetBudgetDashboardQuery(2026, 9));
+        after.Currency.ShouldBe("EUR");
+        after.TotalBudget.ShouldBe(before.TotalBudget);
     }
 }

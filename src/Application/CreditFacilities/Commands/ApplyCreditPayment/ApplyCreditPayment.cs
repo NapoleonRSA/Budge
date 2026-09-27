@@ -26,7 +26,8 @@ public class ApplyCreditPaymentCommandHandler : IRequestHandler<ApplyCreditPayme
         var month = CreditPayoffCalculator.AdvanceMonth(
             facility.Balance,
             facility.AnnualInterestRate,
-            facility.MonthlyPayment);
+            facility.MonthlyPayment,
+            facility.MonthlyAdminFee);
 
         if (!month.CoversInterest)
         {

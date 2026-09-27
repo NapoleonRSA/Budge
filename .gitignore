@@ -486,7 +486,8 @@ $RECYCLE.BIN/
 *.swp
 .azure
 
-# SQLite database files
+# Local databases and tool data
+.local/
 *.db
 *.db-shm
 *.db-wal

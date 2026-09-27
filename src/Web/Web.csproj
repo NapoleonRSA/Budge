@@ -12,6 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Infrastructure.Migrations.Sqlite\Infrastructure.Migrations.Sqlite.csproj" />
+    <ProjectReference Include="..\Infrastructure.Migrations.MySql\Infrastructure.Migrations.MySql.csproj" />
+    <ProjectReference Include="..\Infrastructure.Migrations.PostgreSql\Infrastructure.Migrations.PostgreSql.csproj" />
+    <ProjectReference Include="..\Infrastructure.Migrations.SqlServer\Infrastructure.Migrations.SqlServer.csproj" />
     <ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 

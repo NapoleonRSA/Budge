@@ -14,6 +14,9 @@ public class FunctionalTestSetup
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
+        Environment.SetEnvironmentVariable("BUDGE_LOAD_DOTENV", "0");
+        Environment.SetEnvironmentVariable("BUDGE_LOAD_LOCAL_CONFIG", "0");
+
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var cancellationToken = cts.Token;
 

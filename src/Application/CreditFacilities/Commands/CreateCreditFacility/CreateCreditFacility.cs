@@ -1,6 +1,7 @@
 using Budge.Application.Common.Interfaces;
 using Budge.Application.Common.Security;
 using Budge.Domain.Entities;
+using Budge.Domain.Enums;
 using Budge.Domain.Services;
 
 namespace Budge.Application.CreditFacilities.Commands.CreateCreditFacility;
@@ -19,6 +20,14 @@ public record CreateCreditFacilityCommand : IRequest<int>
     public decimal MonthlyPayment { get; init; }
 
     public int DueDay { get; init; }
+
+    public FacilityKind Kind { get; init; }
+
+    public FacilityType? Type { get; init; }
+
+    public int? TermMonths { get; init; }
+
+    public decimal MonthlyAdminFee { get; init; }
 }
 
 public class CreateCreditFacilityCommandValidator : AbstractValidator<CreateCreditFacilityCommand>
@@ -48,6 +57,19 @@ public class CreateCreditFacilityCommandValidator : AbstractValidator<CreateCred
 
         RuleFor(v => v.DueDay)
             .InclusiveBetween(1, 31);
+
+        RuleFor(v => v.MonthlyAdminFee)
+            .GreaterThanOrEqualTo(0);
+
+        RuleFor(v => v.Type)
+            .Must(type => type is null || Enum.IsDefined(type.Value));
+
+        When(v => (v.Type?.IsInstallment() ?? (v.Kind == FacilityKind.Installment)), () =>
+        {
+            RuleFor(v => v.TermMonths)
+                .NotNull()
+                .InclusiveBetween(1, CreditPayoffCalculator.MaxMonths);
+        });
     }
 
     public async Task<bool> PersonExists(int personId, CancellationToken cancellationToken)
@@ -68,6 +90,7 @@ public class CreateCreditFacilityCommandHandler : IRequestHandler<CreateCreditFa
     public async Task<int> Handle(CreateCreditFacilityCommand request, CancellationToken cancellationToken)
     {
         var name = request.Name!.Trim();
+        var type = request.Type ?? FacilityTypeExtensions.FromKind(request.Kind);
         var facility = new CreditFacility
         {
             PersonId = request.PersonId,
@@ -75,7 +98,11 @@ public class CreateCreditFacilityCommandHandler : IRequestHandler<CreateCreditFa
             Balance = request.Balance,
             AnnualInterestRate = request.AnnualInterestRate,
             MonthlyPayment = request.MonthlyPayment,
-            DueDay = request.DueDay
+            DueDay = request.DueDay,
+            Kind = type.ToKind(),
+            Type = type,
+            TermMonths = type.IsInstallment() ? request.TermMonths : null,
+            MonthlyAdminFee = request.MonthlyAdminFee
         };
 
         var bill = new Bill

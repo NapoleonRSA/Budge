@@ -18,5 +18,7 @@ public interface IApplicationDbContext
 
     DbSet<CreditFacility> CreditFacilities { get; }
 
+    DbSet<LedgerSettings> LedgerSettings { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

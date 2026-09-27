@@ -1,6 +1,7 @@
 using Budge.Application.Common.Interfaces;
 using Budge.Application.Common.Security;
 using Budge.Domain.Entities;
+using Budge.Domain.Enums;
 using Budge.Domain.Services;
 
 namespace Budge.Application.CreditFacilities.Commands.UpdateCreditFacility;
@@ -21,6 +22,14 @@ public record UpdateCreditFacilityCommand : IRequest
     public decimal MonthlyPayment { get; init; }
 
     public int DueDay { get; init; }
+
+    public FacilityKind Kind { get; init; }
+
+    public FacilityType? Type { get; init; }
+
+    public int? TermMonths { get; init; }
+
+    public decimal MonthlyAdminFee { get; init; }
 }
 
 public class UpdateCreditFacilityCommandValidator : AbstractValidator<UpdateCreditFacilityCommand>
@@ -50,6 +59,19 @@ public class UpdateCreditFacilityCommandValidator : AbstractValidator<UpdateCred
 
         RuleFor(v => v.DueDay)
             .InclusiveBetween(1, 31);
+
+        RuleFor(v => v.MonthlyAdminFee)
+            .GreaterThanOrEqualTo(0);
+
+        RuleFor(v => v.Type)
+            .Must(type => type is null || Enum.IsDefined(type.Value));
+
+        When(v => (v.Type?.IsInstallment() ?? (v.Kind == FacilityKind.Installment)), () =>
+        {
+            RuleFor(v => v.TermMonths)
+                .NotNull()
+                .InclusiveBetween(1, CreditPayoffCalculator.MaxMonths);
+        });
     }
 
     public async Task<bool> PersonExists(int personId, CancellationToken cancellationToken)
@@ -76,12 +98,17 @@ public class UpdateCreditFacilityCommandHandler : IRequestHandler<UpdateCreditFa
         Guard.Against.NotFound(request.Id, facility);
 
         var name = request.Name!.Trim();
+        var type = request.Type ?? FacilityTypeExtensions.FromKind(request.Kind);
         facility.PersonId = request.PersonId;
         facility.Name = name;
         facility.Balance = request.Balance;
         facility.AnnualInterestRate = request.AnnualInterestRate;
         facility.MonthlyPayment = request.MonthlyPayment;
         facility.DueDay = request.DueDay;
+        facility.Kind = type.ToKind();
+        facility.Type = type;
+        facility.TermMonths = type.IsInstallment() ? request.TermMonths : null;
+        facility.MonthlyAdminFee = request.MonthlyAdminFee;
 
         if (facility.PaymentBill is null)
         {
