@@ -64,13 +64,24 @@ npm test
 
 ## Household ledger
 
-Sign in and the home page becomes the ledger.
+Sign in and the home page becomes the ledger. It starts empty.
 
+- Choose the currency in the ledger header. Amounts stay as entered; the currency changes how they are shown.
 - Add people, then assign bills to the person who pays them.
 - Add a credit card or other facility. Its set payment is added to that person's bills. The ledger shows this month's interest and how long the balance takes to pay off at that payment. Apply the set payment to charge interest and reduce the balance.
 - Quick add a spend against a person and a category. That amount is subtracted from the category budget left for the month. Spending is also totaled by person.
 
-Development seeds an administrator at `administrator@localhost` / `Administrator1!`, plus Alex, Jordan, a few bills, a Visa balance, and sample spending. The database is recreated each time the API starts in Development.
+Development creates a local sign-in account. It does not create people, bills, or spending.
+
+## Database
+
+Copy `src/Web/appsettings.Local.json.example` to `src/Web/appsettings.Local.json` and enter `Database:Username` and `Database:Password` there. That file is gitignored. The committed settings stay on SQLite and do not contain a password.
+
+`Database:Provider` can be `Sqlite`, `MySql`, `PostgreSQL`, or `SqlServer`. The local file is set up for PostgreSQL on `localhost`. Migrations run when the API starts. Each provider has its own migration project under `src/Infrastructure.Migrations.*`.
+
+```bash
+dotnet run --project src/Web --no-launch-profile --urls http://localhost:5270
+```
 
 ## Help
 To learn more about the template go to the [project website](https://cleanarchitecture.jasontaylor.dev). Here you can find additional guidance, request new features, report a bug, and discuss the template with other users.

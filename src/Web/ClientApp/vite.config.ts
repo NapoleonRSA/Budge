@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react';
 
 const target =
   process.env['services__webapi__https__0'] ||
-  process.env['services__webapi__http__0'];
+  process.env['services__webapi__http__0'] ||
+  'http://localhost:5270';
 
 const proxyOptions = target
   ? { target, secure: false, changeOrigin: true }

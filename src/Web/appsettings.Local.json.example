@@ -1,0 +1,10 @@
+{
+  "Database": {
+    "Provider": "PostgreSQL",
+    "Host": "localhost",
+    "Port": 5432,
+    "Name": "budge",
+    "Username": "",
+    "Password": ""
+  }
+}

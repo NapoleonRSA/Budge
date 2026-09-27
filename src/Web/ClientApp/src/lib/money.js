@@ -6,10 +6,29 @@ export function roundMoney(value) {
   return (sign * cents) / 100;
 }
 
-export function formatMoney(amount) {
+let activeCurrency = 'USD';
+
+export function setActiveCurrency(code) {
+  if (typeof code === 'string' && /^[A-Z]{3}$/.test(code)) {
+    activeCurrency = code;
+  }
+}
+
+export function activeCurrencyCode() {
+  return activeCurrency;
+}
+
+export function currencyChoices() {
+  const supported = typeof Intl.supportedValuesOf === 'function'
+    ? Intl.supportedValuesOf('currency')
+    : ['USD', 'EUR', 'GBP', 'ZAR', 'AUD', 'CAD', 'JPY'];
+  return [...new Set([activeCurrency, ...supported])].sort();
+}
+
+export function formatMoney(amount, currency = activeCurrency) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
   }).format(roundMoney(amount));
 }
 
@@ -32,9 +51,19 @@ export function formatMonth(year, month) {
   }).format(new Date(Date.UTC(year, month - 1, 1)));
 }
 
+export function formatMonthYear(iso) {
+  if (!iso) return '';
+  const [year, month] = iso.slice(0, 10).split('-').map(Number);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
 export function formatLongDate(iso) {
   if (!iso) return '';
-  const [year, month, day] = iso.split('-').map(Number);
+  const [year, month, day] = iso.slice(0, 10).split('-').map(Number);
   return new Intl.DateTimeFormat('en-US', {
     month: 'long',
     day: 'numeric',

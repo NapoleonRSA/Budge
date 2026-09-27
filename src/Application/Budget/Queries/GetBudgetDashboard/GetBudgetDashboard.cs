@@ -1,5 +1,6 @@
 using Budge.Application.Common.Interfaces;
 using Budge.Application.Common.Security;
+using Budge.Domain.Enums;
 using Budge.Domain.Services;
 
 namespace Budge.Application.Budget.Queries.GetBudgetDashboard;
@@ -112,7 +113,16 @@ public class GetBudgetDashboardQueryHandler : IRequestHandler<GetBudgetDashboard
                     facility.Balance,
                     facility.AnnualInterestRate,
                     facility.MonthlyPayment,
-                    asOf);
+                    asOf,
+                    facility.MonthlyAdminFee);
+
+                var schedule = CreditPayoffCalculator.BuildSchedule(
+                    facility.Balance,
+                    facility.AnnualInterestRate,
+                    facility.MonthlyPayment,
+                    asOf,
+                    facility.TermMonths,
+                    facility.MonthlyAdminFee);
 
                 return new CreditFacilityDto
                 {
@@ -120,16 +130,32 @@ public class GetBudgetDashboardQueryHandler : IRequestHandler<GetBudgetDashboard
                     PersonId = facility.PersonId,
                     PersonName = people.First(p => p.Id == facility.PersonId).Name,
                     Name = facility.Name,
+                    Kind = facility.Kind,
+                    Type = facility.Type,
+                    TermMonths = facility.TermMonths,
                     Balance = facility.Balance,
                     AnnualInterestRate = facility.AnnualInterestRate,
                     MonthlyPayment = facility.MonthlyPayment,
+                    MonthlyAdminFee = facility.MonthlyAdminFee,
                     DueDay = facility.DueDay,
                     WillPayOff = payoff.WillPayOff,
                     MonthsToPayoff = payoff.Months,
                     PayoffDate = payoff.PayoffDate,
                     TotalInterest = payoff.TotalInterest,
+                    TotalFees = payoff.TotalFees,
                     TotalPaid = payoff.TotalPaid,
-                    FirstMonthInterest = payoff.FirstMonthInterest
+                    FirstMonthInterest = payoff.FirstMonthInterest,
+                    Schedule = schedule.Select(row => new AmortizationRowDto
+                    {
+                        Month = row.Month,
+                        Date = row.Date,
+                        Payment = row.Payment,
+                        Interest = row.Interest,
+                        Fee = row.Fee,
+                        Principal = row.Principal,
+                        Balance = row.Balance,
+                        CoversInterest = row.CoversInterest
+                    }).ToList()
                 };
             })
             .ToList();
@@ -137,10 +163,16 @@ public class GetBudgetDashboardQueryHandler : IRequestHandler<GetBudgetDashboard
         var totalBudget = categories.Sum(c => c.MonthlyBudget);
         var totalSpent = expenses.Sum(e => e.Amount);
 
+        var currency = await _context.LedgerSettings
+            .AsNoTracking()
+            .Select(s => s.CurrencyCode)
+            .FirstOrDefaultAsync(cancellationToken);
+
         return new BudgetDashboardDto
         {
             Year = request.Year,
             Month = request.Month,
+            Currency = string.IsNullOrWhiteSpace(currency) ? "USD" : currency,
             TotalBudget = totalBudget,
             TotalSpent = totalSpent,
             TotalRemaining = totalBudget - totalSpent,
@@ -160,6 +192,8 @@ public class BudgetDashboardDto
     public int Year { get; init; }
 
     public int Month { get; init; }
+
+    public string Currency { get; init; } = "USD";
 
     public decimal TotalBudget { get; init; }
 
@@ -244,7 +278,15 @@ public class CreditFacilityDto
 
     public decimal MonthlyPayment { get; init; }
 
+    public decimal MonthlyAdminFee { get; init; }
+
     public int DueDay { get; init; }
+
+    public FacilityKind Kind { get; init; }
+
+    public FacilityType Type { get; init; }
+
+    public int? TermMonths { get; init; }
 
     public bool WillPayOff { get; init; }
 
@@ -254,9 +296,32 @@ public class CreditFacilityDto
 
     public decimal? TotalInterest { get; init; }
 
+    public decimal? TotalFees { get; init; }
+
     public decimal? TotalPaid { get; init; }
 
     public decimal FirstMonthInterest { get; init; }
+
+    public IReadOnlyList<AmortizationRowDto> Schedule { get; init; } = [];
+}
+
+public class AmortizationRowDto
+{
+    public int Month { get; init; }
+
+    public DateOnly Date { get; init; }
+
+    public decimal Payment { get; init; }
+
+    public decimal Interest { get; init; }
+
+    public decimal Fee { get; init; }
+
+    public decimal Principal { get; init; }
+
+    public decimal Balance { get; init; }
+
+    public bool CoversInterest { get; init; }
 }
 
 public class ExpenseDto

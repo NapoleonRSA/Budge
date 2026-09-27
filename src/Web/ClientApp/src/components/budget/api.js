@@ -49,6 +49,8 @@ export const deleteBill = (id) => request(`/api/Bills/${id}`, { method: 'DELETE'
 
 export const createCreditFacility = (body) => request('/api/CreditFacilities', { method: 'POST', body });
 
+export const updateCreditFacility = (id, body) => request(`/api/CreditFacilities/${id}`, { method: 'PUT', body: { id, ...body } });
+
 export const deleteCreditFacility = (id) => request(`/api/CreditFacilities/${id}`, { method: 'DELETE' });
 
 export const applyCreditPayment = (id) => request(`/api/CreditFacilities/${id}/payments`, { method: 'POST' });
@@ -56,3 +58,8 @@ export const applyCreditPayment = (id) => request(`/api/CreditFacilities/${id}/p
 export const createExpense = (body) => request('/api/Expenses', { method: 'POST', body });
 
 export const deleteExpense = (id) => request(`/api/Expenses/${id}`, { method: 'DELETE' });
+
+export const updateCurrency = (currencyCode) => request('/api/Budget/currency', {
+  method: 'PUT',
+  body: { currencyCode },
+});

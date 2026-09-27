@@ -4,12 +4,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("aca-env");
 
-var databaseServer = builder
-    .AddSqlite(Services.Database);
+var configuredProvider = Environment.GetEnvironmentVariable("Database__Provider");
+var useExternalDatabase = !string.IsNullOrWhiteSpace(configuredProvider)
+    && !configuredProvider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase);
 
 var web = builder.AddProject<Projects.Web>(Services.WebApi)
-    .WithReference(databaseServer)
-    .WaitFor(databaseServer)
     .WithExternalHttpEndpoints()
     .WithAspNetCoreEnvironment()
     .WithUrlForEndpoint("http", url =>
@@ -17,6 +16,15 @@ var web = builder.AddProject<Projects.Web>(Services.WebApi)
         url.DisplayText = "Scalar API Reference";
         url.Url = "/scalar";
     });
+
+if (!useExternalDatabase)
+{
+    var databaseServer = builder.AddSqlite(Services.Database);
+    web = web
+        .WithReference(databaseServer)
+        .WaitFor(databaseServer)
+        .WithEnvironment("Database__Provider", "Sqlite");
+}
 
 if (builder.ExecutionContext.IsRunMode)
 {

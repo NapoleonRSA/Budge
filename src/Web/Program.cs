@@ -1,7 +1,15 @@
 using Budge.Infrastructure.Data;
+using Budge.Web;
 using Scalar.AspNetCore;
 
+LocalEnvironment.Load();
+
 var builder = WebApplication.CreateBuilder(args);
+
+if (!string.Equals(Environment.GetEnvironmentVariable("BUDGE_LOAD_LOCAL_CONFIG"), "0", StringComparison.Ordinal))
+{
+    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+}
 
 // Add services to the container.
 builder.AddServiceDefaults();
@@ -13,14 +21,8 @@ builder.AddWebServices();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    await app.InitialiseDatabaseAsync();
-}
-else
-{
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
