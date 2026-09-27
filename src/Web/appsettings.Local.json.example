@@ -1,4 +1,7 @@
 {
+  "Development": {
+    "AdminPassword": ""
+  },
   "Database": {
     "Provider": "PostgreSQL",
     "Host": "localhost",

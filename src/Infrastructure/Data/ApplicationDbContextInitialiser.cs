@@ -4,6 +4,7 @@ using Budge.Infrastructure.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -51,17 +52,20 @@ public class ApplicationDbContextInitialiser
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IConfiguration _configuration;
 
     public ApplicationDbContextInitialiser(
         ILogger<ApplicationDbContextInitialiser> logger,
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration)
     {
         _logger = logger;
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
+        _configuration = configuration;
     }
 
     public async Task InitialiseAsync()
@@ -86,7 +90,15 @@ public class ApplicationDbContextInitialiser
 
             if (seedDevelopmentAccount)
             {
-                await EnsureDevelopmentAccountAsync();
+                var password = _configuration["Development:AdminPassword"];
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    _logger.LogInformation("Skipping development account seeding because Development:AdminPassword is not configured.");
+                }
+                else
+                {
+                    await EnsureDevelopmentAccountAsync(password);
+                }
             }
         }
         catch (Exception ex)
@@ -107,7 +119,7 @@ public class ApplicationDbContextInitialiser
         await _context.SaveChangesAsync();
     }
 
-    private async Task EnsureDevelopmentAccountAsync()
+    private async Task EnsureDevelopmentAccountAsync(string password)
     {
         var administratorRole = new IdentityRole(Roles.Administrator);
 
@@ -120,7 +132,7 @@ public class ApplicationDbContextInitialiser
 
         if (_userManager.Users.All(u => u.UserName != administrator.UserName))
         {
-            await _userManager.CreateAsync(administrator, "Administrator1!");
+            await _userManager.CreateAsync(administrator, password);
             if (!string.IsNullOrWhiteSpace(administratorRole.Name))
             {
                 await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });

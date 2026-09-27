@@ -71,7 +71,7 @@ Sign in and the home page becomes the ledger. It starts empty.
 - Add a credit card or other facility. Its set payment is added to that person's bills. The ledger shows this month's interest and how long the balance takes to pay off at that payment. Apply the set payment to charge interest and reduce the balance.
 - Quick add a spend against a person and a category. That amount is subtracted from the category budget left for the month. Spending is also totaled by person.
 
-Development creates a local sign-in account. It does not create people, bills, or spending.
+Development creates a local sign-in account when `Development:AdminPassword` is set in the ignored `src/Web/appsettings.Local.json`. It does not create people, bills, or spending.
 
 ## Database
 

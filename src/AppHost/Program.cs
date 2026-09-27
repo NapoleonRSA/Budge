@@ -26,6 +26,12 @@ if (!useExternalDatabase)
         .WithEnvironment("Database__Provider", "Sqlite");
 }
 
+var developmentAdminPassword = builder.Configuration["Development:AdminPassword"];
+if (!string.IsNullOrWhiteSpace(developmentAdminPassword))
+{
+    web = web.WithEnvironment("Development__AdminPassword", developmentAdminPassword);
+}
+
 if (builder.ExecutionContext.IsRunMode)
 {
     builder.AddJavaScriptApp(Services.WebFrontend, "./../Web/ClientApp")

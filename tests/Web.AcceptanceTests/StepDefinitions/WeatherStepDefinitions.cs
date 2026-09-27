@@ -12,7 +12,7 @@ public sealed class WeatherStepDefinitions(WeatherPage weatherPage)
         var loginPage = new LoginPage(page);
         await loginPage.GotoAsync();
         await loginPage.SetEmail("administrator@localhost");
-        await loginPage.SetPassword("Administrator1!");
+        await loginPage.SetPassword(AspireSetup.DevelopmentAdminPassword);
         await loginPage.ClickLogin();
         await Assertions.Expect(page.Locator("a:has-text('Log out')")).ToBeVisibleAsync();
 
